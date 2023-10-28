@@ -3,12 +3,14 @@
 #include <ArduinoJson.h>
 
 const char* ssid = "WorldNet33";
-const char* password = "Password of your wifi";
+const char* password = "wifipassword";
 const char* mqtt_server = "broker.emqx.io";
 const int mqtt_port = 1883;
 const char* topic_operation = "testlocation1/topic_operation";
 const char* topic_config = "testlocation2/topic_config";
-const int relayPins[] = {5, 4, 14, 12};
+//const int relayPins[] = {5, 4, 14, 12};
+//const int relayPins[] = {5, 4, 12, 13};//bare minimum board
+const int relayPins[] = {D3, D6, D7, D5};
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -34,7 +36,7 @@ void commander(StaticJsonDocument<200>& doc) {
     responseDoc["switch1"] = digitalRead(relayPins[0]) == HIGH ? "ON" : "OFF";
     responseDoc["switch2"] = digitalRead(relayPins[1]) == HIGH ? "ON" : "OFF";
     responseDoc["switch3"] = digitalRead(relayPins[2]) == HIGH ? "ON" : "OFF";
-
+    responseDoc["switch4"] = digitalRead(relayPins[3]) == HIGH ? "ON" : "OFF";
     // Serialize the JSON object to a string
     String responseStr;
     serializeJson(responseDoc, responseStr);
@@ -47,6 +49,7 @@ void commander(StaticJsonDocument<200>& doc) {
     const char* switch1 = doc["switch1"];
     const char* switch2 = doc["switch2"];
     const char* switch3 = doc["switch3"];
+    const char* switch4 = doc["switch4"];
 
     if (strcmp(switch1, "ON") == 0) {
       digitalWrite(relayPins[0], HIGH);
@@ -65,6 +68,12 @@ void commander(StaticJsonDocument<200>& doc) {
     } else if (strcmp(switch3, "OFF") == 0) {
       digitalWrite(relayPins[2], LOW);
     }
+ 
+    if (strcmp(switch4, "ON") == 0) {
+      digitalWrite(relayPins[3], HIGH);
+    } else if (strcmp(switch4, "OFF") == 0) {
+      digitalWrite(relayPins[3], LOW);
+    }   
   } else {
     Serial.println("Unknown command received.");
   }
@@ -73,7 +82,7 @@ void commander(StaticJsonDocument<200>& doc) {
 
 
 void setup() {
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 5; i++) {
     pinMode(relayPins[i], OUTPUT);
   }
 
